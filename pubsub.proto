@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+package pubsub;
+
+message Server {
+    optional string name = 1;
+    optional string ip = 2;
+    optional int32 port = 3;
+}
+
+message ServerList {
+    repeated Server servers = 1;
+}
+
+enum StatusType{
+    FAIL = 0;
+    PASS = 1;
+}
+
+message Status{
+    optional StatusType status = 1;
+}
+
+enum ArticleType {
+    NOTYPE = 0;
+    SPORTS = 1;
+    FASHION = 2;
+    POLITICS = 3;
+}
+
+message Article {
+    optional ArticleType type = 1;
+    optional string author = 2;
+    optional string content = 3;
+    optional google.protobuf.Timestamp timestamp = 4;
+}
+
+message Client {
+    optional string name = 1;
+    optional string uid = 2;
+}
+
+message ArticleRequest {
+    optional string author = 1;
+    optional google.protobuf.Timestamp date = 2;
+    optional ArticleType type = 3;
+    optional string uid = 4;
+}
+
+message ConnectedGetArticleRequest {
+    optional ArticleRequest articleRequest = 1;
+    repeated Server visitedServers = 2;
+    optional Server currentServer = 3;
+    optional bool isClientCheck = 4;
+}
+
+message PublishArticleRequest{
+    optional ArticleType type = 1;
+    optional string author = 2;
+    optional string content = 3;
+    optional string uid = 4;
+}
+
+service RegisteryServerAndServerService {
+    rpc RegisterServer(Server) returns (Status);
+}
+
+service RegisteryServerAndClientService {
+    rpc GetListOfServers(Client) returns (stream Server);
+}
+
+message ArticlesResponse {
+    optional StatusType status = 1;
+    repeated Article articles = 2;
+}
+
+message ArticleList {
+    repeated Article articles = 1;
+}
+
+service ServerConnectorService {
+    rpc ConnectServer(Server) returns (Status);
+}
+
+service ServerAndClientService {
+    rpc JoinServer (Client) returns (Status);
+    rpc LeaveServer (Client) returns (Status);
+    rpc getArticles (ArticleRequest) returns (ArticlesResponse);
+    rpc getConnectedArticles(ConnectedGetArticleRequest) returns (ArticlesResponse);
+    rpc publishArticle (PublishArticleRequest) returns (Status);
+}
